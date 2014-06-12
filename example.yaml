@@ -1,0 +1,26 @@
+---
+- filter: "-I master"
+  tasks:
+    - name: 'Do a thing'
+      agent: service
+      action: status
+      parameters:
+        service: sshd
+    - name: 'Do another thing'
+      agent: service
+      action: status
+      parameters:
+        service: sshd
+- filter: "-I centos65a"
+  tasks:
+    - name: 'Do a thing'
+      agent: service
+      action: status
+      parameters:
+        service: sshd
+      on_failure: break
+    - name: 'Do another thing'
+      agent: service
+      action: status
+      parameters:
+        service: sshd
