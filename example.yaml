@@ -1,5 +1,7 @@
 ---
-- filter: "-I master"
+- name: 'Perform actions on the master'
+  filter:
+    identity: 'master'
   tasks:
     - name: 'Do a thing'
       agent: service
@@ -11,7 +13,11 @@
       action: status
       parameters:
         service: sshd
-- filter: "-I centos65a"
+- name: 'Perform actions on filtered systems'
+  filter:
+    class:    'profile::application'
+    fact:     'osfamily=RedHat'
+    compound: 'osfamily=RedHat and profile::application'
   tasks:
     - name: 'Do a thing'
       agent: service
