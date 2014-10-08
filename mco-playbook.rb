@@ -8,6 +8,8 @@ include MCollective::RPC
 playbook = YAML.load(File.read(ARGV[0]))
 
 playbook.each do |set|
+  puts "Beginning set: #{set['name']}"
+
   filter = set['filter']
   set['tasks'].each do |task|
     mc = rpcclient(task['agent'])
@@ -21,6 +23,8 @@ playbook.each do |set|
       result
     end
 
+    puts "Running task: #{task['name']}"
     mc.method_missing(task['action'], parameters)
+    mc.disconnect
   end
 end
