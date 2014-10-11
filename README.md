@@ -9,14 +9,18 @@ missing in MCollective is the ability to set up multi-phase orchestrated actions
 Run the `mco-playbook` script with the first argument being the path to a YAML
 playbook file.
 
-    ./mco-playbook.rb example.yaml
+```
+./mco-playbook.rb example.yaml
+```
 
 ## Playbooks
 
 First, create a playbook. Playbooks are YAML files with sequences of tasks to
 run and filters, or target hosts to run them on.
 
-    - name: "Example task"
+```yaml
+- name: "Example task"
+```
 
 Each task defines a name, and a filter. The name is purely cosmetic, but will
 be printed when the task is running, and the filter defines an MCollective
@@ -27,14 +31,16 @@ key in the filters hash, and can be a single string or an array. Filters can be
 as simple or as complex as necessary. An example using all types of filters is
 shown below.
 
-    - name: "Example task"
-      filter:
-        identity:
-          - centos65a
-          - centos65b
-        class: profile::webserver
-        compound: "profile::webserver and osfamily=RedHat"
-        fact: "osfamily=RedHat"
+```yaml
+- name: "Example task"
+  filter:
+    identity:
+      - centos65a
+      - centos65b
+    class: profile::webserver
+    compound: "profile::webserver and osfamily=RedHat"
+    fact: "osfamily=RedHat"
+```
 
 After name and filter, a task can either define an `agent` and `action` or
 start a `foreach_node`. An action is simple: call the a specified RPC agent and
@@ -42,28 +48,33 @@ action (and optionally, parameters) against nodes matching the current filter.
 The calls will be performed at the maximum allowable concurrency given
 MColletive's batch settings.
 
-    - name: "Example task"
-      filter:
-        identity: master
-      agent: puppet
-      action: runonce
-      parameters:
-        noop: true
+```yaml
+- name: "Example task"
+- name: "Example task"
+  filter:
+    identity: master
+  agent: puppet
+  action: runonce
+  parameters:
+    noop: true
+```
  
 A `foreach_node`, on the other hand, will step through the nodes matching the
 current filter, and using a single-node filter apply a nested set of tasks.
 
-    - name: "Example task"
-      filter:
-        class: profile::webserver
-      foreach_node:
-        tasks:
-          - name: "first subtask"
-            agent: rpcutil
-            action: ping
-          - name: "second subtask"
-            agent: rpcutil
-            action: ping
+```yaml
+- name: "Example task"
+  filter:
+    class: profile::webserver
+  foreach_node:
+    tasks:
+      - name: "first subtask"
+        agent: rpcutil
+        action: ping
+      - name: "second subtask"
+        agent: rpcutil
+        action: ping
+```
 
 Note that through the `foreach_node` mechanism, a task might contain subtasks.
 While the subtasks will default to their parent filter (the foreach_node filter
@@ -73,6 +84,7 @@ collection of application servers, removing each from a load balancer pool,
 updating the application, and addding it back to the pool before moving on to
 perform the same action on the next application server.
 
+```yaml
     - filter: &load_balancer
         identity: lb.example.com
 
@@ -111,6 +123,7 @@ perform the same action on the next application server.
         - name: "something else"
           agent: rpcutil
           action: ping
+```
 
 ## Limitations
 
