@@ -1,32 +1,65 @@
 ---
-- name: 'Perform actions on the master'
-  filter:
-    identity: 'master'
+
+- filter: &load_balancer
+    identity: 'lb.example.com'
+
+- filter: &classifier
+    identity: 'console.example.com'
+
+- filter: &sandbox_webservers
+    class:
+      - 'profile::webserver'
+      - 'profile::sandbox'
+
+- name: 'Prepare the web servers for update'
+  filter: *sandbox_webservers
   tasks:
-    - name: 'Do a thing'
-      agent: service
-      action: status
+    - name: 'Run apt-get update'
+      agent: shell
+      action: run
       parameters:
-        service: sshd
-    - name: 'Do another thing'
-      agent: service
-      action: status
+        command: 'apt-get update'
+    - name: 'Pause automatic Puppet runs'
+      agent: puppet
+      action: disable
+    - name: 'Update classification'
+      filter: *classifier
+      agent: classifier
+      action: update
       parameters:
-        service: sshd
-- name: 'Perform actions on filtered systems'
-  filter:
-    class:    'profile::application'
-    fact:     'osfamily=RedHat'
-    compound: 'osfamily=RedHat and profile::application'
+        node_group: 'webservers'
+        variable: 'version=2.8'
+    - name: 'One at a time, update the webservers'
+      foreach_node:
+        tasks:
+          - name: 'Remove from load balancer'
+            filter: *load_balancer
+            agent: echo
+            action: echo
+            parameters:
+              msg: 'remove_{{ node }}_from_lb'
+          - name: 'Perform update'
+            agent: puppet
+            action: enable
+          - name: 'Add back to load balancer'
+            filter: *load_balancer
+            agent: echo
+            action: echo
+            parameters:
+              msg: 'add_{{ node }}_to_lb'
+    - name: 'Re-enable regular puppet runs'
+      agent: puppet
+      action: enable
+
+- name: 'A Follow-on task'
   tasks:
-    - name: 'Do a thing'
-      agent: service
-      action: status
+    - name: 'Anything'
+      agent: echo
+      action: echo
       parameters:
-        service: sshd
-      on_failure: break
-    - name: 'Do another thing'
-      agent: service
-      action: status
+        msg: 'hello'
+    - name: 'Another task'
+      agent: echo
+      action: echo
       parameters:
-        service: sshd
+        msg: 'world'
