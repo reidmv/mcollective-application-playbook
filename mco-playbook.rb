@@ -10,7 +10,7 @@ include MCollective::RPC
 # filter (if applicable), and then after making the determination, calls the
 # appropriate method.
 def process_task(options, filter, vars)
-  puts options['name'] if options['name']
+  printtitle(options['name']) if options['name']
   filter = options['filter'] || filter
   case
   when options['foreach_node']
@@ -53,8 +53,7 @@ def process_action(options, filter, vars)
   end
 
   nodes = agent.discover
-  puts "Running task: #{options['name']}"
-  puts "Nodes: #{nodes.inspect}"
+  printtitle("Running task: #{options['name']}", nodes)
   printrpc agent.method_missing(options['action'], parameters)
   agent.disconnect
 end
@@ -87,6 +86,15 @@ end
 # replaces each variable with one from the accompanying vars array.
 def interpolate(string, vars)
   string.gsub(/{{ (\w+) }}/) { vars[$1] }
+end
+
+# Print a message divider
+def printtitle(name, nodes = nil)
+  bar = ['#']
+  75.times { bar << '=' }
+  puts MCollective::Util.colorize(:green, bar.join(''))
+  puts MCollective::Util.colorize(:green, '# ' + name)
+  puts MCollective::Util.colorize(:green, "# Nodes: #{nodes.inspect}") if nodes
 end
 
 playbook = YAML.load(File.read(ARGV[0]))
