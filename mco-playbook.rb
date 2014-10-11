@@ -90,8 +90,13 @@ def interpolate(string, vars)
 end
 
 playbook = YAML.load(File.read(ARGV[0]))
-nil_filter = {'filter' => {:discovery => []}}
-empty_vars = {}
+playbook.each do |validate|
+  if not validate['filter']
+    puts "ERROR: Must supply filter for each top-level task"
+    puts "\"#{validate['name']}\" does not have a filter" if validate['name']
+    exit 1
+  end
+end
 playbook.each do |set|
-  process_task(set, nil_filter, empty_vars)
+  process_task(set, nil, {})
 end
