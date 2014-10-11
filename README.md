@@ -85,44 +85,44 @@ updating the application, and addding it back to the pool before moving on to
 perform the same action on the next application server.
 
 ```yaml
-    - filter: &load_balancer
-        identity: lb.example.com
+- filter: &load_balancer
+    identity: lb.example.com
 
-    - name: "Example task"
-      filter:
-        class: profile::webserver
-      foreach_node:
-        tasks:
-          - name: "remove from load balancer"
-            filter: *load_balancer
-            agent: haproxy
-            action: remove_from_pool
-            parameters:
-              pool: "app"
-              member: "{{ node }}"
-          - name: "update app"
-            agent: shell
-            action: run
-            parameters:
-              command: "/some/command --flags argument"
-          - name: "add back to load balancer"
-            filter: *load_balancer
-            agent: haproxy
-            action: add_to_pool
-            parameters:
-              pool: "app"
-              member: "{{ node }}"
+- name: "Example task"
+  filter:
+    class: profile::webserver
+  foreach_node:
+    tasks:
+      - name: "remove from load balancer"
+        filter: *load_balancer
+        agent: haproxy
+        action: remove_from_pool
+        parameters:
+          pool: "app"
+          member: "{{ node }}"
+      - name: "update app"
+        agent: shell
+        action: run
+        parameters:
+          command: "/some/command --flags argument"
+      - name: "add back to load balancer"
+        filter: *load_balancer
+        agent: haproxy
+        action: add_to_pool
+        parameters:
+          pool: "app"
+          member: "{{ node }}"
 
-    - name: "Example follow-up task"
-      filter:
-        class: profile::webserver
-      tasks:
-        - name: "run puppet"
-          agent: puppet
-          action: runonce
-        - name: "something else"
-          agent: rpcutil
-          action: ping
+- name: "Example follow-up task"
+  filter:
+    class: profile::webserver
+  tasks:
+    - name: "run puppet"
+      agent: puppet
+      action: runonce
+    - name: "something else"
+      agent: rpcutil
+      action: ping
 ```
 
 ## Limitations
